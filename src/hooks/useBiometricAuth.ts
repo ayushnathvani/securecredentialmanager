@@ -138,6 +138,7 @@ export const useBiometricAuth = () => {
   ): Promise<{ username: string; password: string } | null> => {
     if (!biometricSupport.available) {
       setError('Biometric authentication is not available');
+      console.log('Biometric not available');
       return null;
     }
 
@@ -145,14 +146,17 @@ export const useBiometricAuth = () => {
     setError('');
 
     try {
+      console.log('Calling keychainService.getCredentialsWithBiometrics...');
       const credentials = await keychainService.getCredentialsWithBiometrics(
         undefined,
         promptMessage || `Authenticate with ${getBiometricTypeName()}`,
       );
 
+      console.log('Credentials retrieved:', credentials ? 'Success' : 'Null');
       setLoading(false);
       return credentials;
     } catch (err) {
+      console.error('getCredentialsWithBiometrics error:', err);
       setLoading(false);
       setError('Failed to retrieve credentials');
       return null;

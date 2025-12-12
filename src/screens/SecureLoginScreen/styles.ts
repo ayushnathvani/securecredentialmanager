@@ -158,4 +158,46 @@ export const styles = StyleSheet.create({
     marginTop: spacing.xs,
     marginLeft: spacing.xl,
   },
+  biometricLoginButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary + '15',
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
+    borderWidth: 2,
+    borderColor: colors.primary,
+    marginBottom: spacing.md,
+  },
+  biometricIcon: {
+    fontSize: 48,
+    marginRight: spacing.md,
+  },
+  biometricTextContainer: {
+    flex: 1,
+  },
+  biometricTitle: {
+    fontSize: fontSize.lg,
+    fontWeight: '700',
+    color: colors.primary,
+    marginBottom: spacing.xs,
+  },
+  biometricSubtitle: {
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: spacing.md,
+  },
+  divider: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.border,
+  },
+  dividerText: {
+    paddingHorizontal: spacing.md,
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
+  },
 });

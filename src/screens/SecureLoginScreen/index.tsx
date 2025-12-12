@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, ScrollView, Alert, TouchableOpacity } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Button, TextInput, Card, Checkbox } from '../../components';
-import { useSecureLogin } from '../../hooks';
+import { Button, TextInput, Card } from '../../components';
+import { useSecureLogin, useBiometricAuth } from '../../hooks';
 import { styles } from './styles';
 import type { RootStackParamList } from '../../navigation';
 import { keychainService } from '../../utils/keychainService';
@@ -30,11 +30,71 @@ const SecureLoginScreen = () => {
     reloadCredentials,
   } = useSecureLogin();
 
+  const {
+    biometricSupport,
+    loading: biometricLoading,
+    getBiometricTypeName,
+    getBiometricIcon,
+    saveCredentialsWithBiometrics,
+    getCredentialsWithBiometrics,
+  } = useBiometricAuth();
+
+  const [hasBiometricCredentials, setHasBiometricCredentials] = useState(false);
+
   useFocusEffect(
     React.useCallback(() => {
       reloadCredentials();
+      checkBiometricCredentials();
     }, [reloadCredentials]),
   );
+
+  const checkBiometricCredentials = async () => {
+    try {
+      // Check if we have biometric-protected credentials stored
+      const biometricCreds = await keychainService.hasBiometricCredentials();
+      setHasBiometricCredentials(biometricCreds);
+    } catch (err) {
+      console.error('Error checking biometric credentials:', err);
+      setHasBiometricCredentials(false);
+    }
+  };
+
+  const handleBiometricLogin = async () => {
+    try {
+      console.log('Starting biometric login...');
+      const credentials = await getCredentialsWithBiometrics(
+        `Authenticate to login with ${getBiometricTypeName()}`,
+      );
+
+      console.log(
+        'Biometric credentials result:',
+        credentials ? 'Found' : 'Not found',
+      );
+
+      if (credentials && credentials.username && credentials.password) {
+        // Set auth state and navigate to Home directly
+        console.log('Setting auth state and navigating to Home...');
+        await keychainService.setAuthState(true);
+
+        // Use setTimeout to ensure state is set before navigation
+        setTimeout(() => {
+          navigation.replace('Home');
+        }, 100);
+      } else {
+        // Credentials not found but biometric was successful
+        Alert.alert(
+          'No Saved Credentials',
+          'Please login with your username and password first.',
+        );
+      }
+    } catch (err) {
+      console.error('Biometric login failed:', err);
+      Alert.alert(
+        'Authentication Failed',
+        'Please try again or use your credentials to login.',
+      );
+    }
+  };
 
   const proceedAfterLogin = async () => {
     try {
@@ -59,6 +119,39 @@ const SecureLoginScreen = () => {
         <Text style={styles.title}>Secure Login</Text>
         <Text style={styles.subtitle}>Token Storage Demo</Text>
       </View>
+
+      {/* Biometric Quick Login */}
+      {hasBiometricCredentials && biometricSupport.available && (
+        <Card style={styles.card}>
+          <Text style={styles.cardTitle}>Quick Login</Text>
+          <Text style={styles.description}>
+            Use {getBiometricTypeName()} to login instantly with your saved
+            credentials.
+          </Text>
+          <TouchableOpacity
+            style={styles.biometricLoginButton}
+            onPress={handleBiometricLogin}
+            disabled={biometricLoading}
+          >
+            <Text style={styles.biometricIcon}>{getBiometricIcon()}</Text>
+            <View style={styles.biometricTextContainer}>
+              <Text style={styles.biometricTitle}>
+                {biometricLoading
+                  ? 'Authenticating...'
+                  : `Login with ${getBiometricTypeName()}`}
+              </Text>
+              <Text style={styles.biometricSubtitle}>
+                Tap to authenticate and login
+              </Text>
+            </View>
+          </TouchableOpacity>
+          <View style={styles.dividerContainer}>
+            <View style={styles.divider} />
+            <Text style={styles.dividerText}>or login with credentials</Text>
+            <View style={styles.divider} />
+          </View>
+        </Card>
+      )}
 
       <Card style={styles.card}>
         <Text style={styles.cardTitle}>Login with Token Storage</Text>
@@ -122,11 +215,49 @@ const SecureLoginScreen = () => {
             const loginSuccess = await handleLogin();
             // Navigate to MPIN setup or verify after successful login
             if (loginSuccess) {
-              // Check if this is a new user (no saved credentials before)
+              // Check if biometrics is available and this is a new user
               const isNewUser = !savedCredentials;
 
-              if (isNewUser) {
-                // Prompt user to save credentials for new users
+              if (isNewUser && biometricSupport.available) {
+                // Prompt user to save credentials with biometric protection
+                Alert.alert(
+                  'Enable Biometric Login?',
+                  `Would you like to enable ${getBiometricTypeName()} login for faster access next time? Your credentials will be encrypted and protected with ${getBiometricTypeName()}.`,
+                  [
+                    {
+                      text: 'Not Now',
+                      style: 'cancel',
+                      onPress: async () => {
+                        // Continue without biometric protection
+                        await proceedAfterLogin();
+                      },
+                    },
+                    {
+                      text: 'Enable',
+                      onPress: async () => {
+                        try {
+                          // Save credentials with biometric protection
+                          const saved = await saveCredentialsWithBiometrics(
+                            username,
+                            password,
+                          );
+                          if (saved) {
+                            setHasBiometricCredentials(true);
+                          }
+                          await proceedAfterLogin();
+                        } catch (err) {
+                          console.error(
+                            'Failed to save biometric credentials:',
+                            err,
+                          );
+                          await proceedAfterLogin();
+                        }
+                      },
+                    },
+                  ],
+                );
+              } else if (isNewUser) {
+                // No biometrics available, prompt regular save
                 Alert.alert(
                   'Save Login Credentials?',
                   "Would you like to securely save your login credentials for faster access next time? Your credentials will be encrypted and stored in your device's secure keychain.",
@@ -135,7 +266,6 @@ const SecureLoginScreen = () => {
                       text: 'Not Now',
                       style: 'cancel',
                       onPress: async () => {
-                        // Continue without saving
                         await proceedAfterLogin();
                       },
                     },
@@ -143,7 +273,6 @@ const SecureLoginScreen = () => {
                       text: 'Save',
                       onPress: async () => {
                         try {
-                          // Credentials already saved by handleLogin
                           Alert.alert(
                             'Success',
                             'Your credentials have been saved securely!',

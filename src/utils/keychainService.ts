@@ -218,6 +218,37 @@ export const keychainService = {
     }
   },
 
+  // Check if biometric credentials exist (without triggering biometric prompt)
+  hasBiometricCredentials: async (): Promise<boolean> => {
+    try {
+      // Try to get credentials - on Android with biometric protection,
+      // this will return false if no credentials exist (won't trigger prompt)
+      // We use a simple check without authenticationPrompt
+      const credentials = await Keychain.getGenericPassword({
+        service: `${KEYCHAIN_SERVICE}_BIOMETRIC`,
+      });
+      const result = credentials !== false && credentials !== null;
+      console.log('hasBiometricCredentials result:', result);
+      return result;
+    } catch (error) {
+      console.error('Error checking biometric credentials:', error);
+      return false;
+    }
+  },
+
+  // Set auth state (login status)
+  setAuthState: async (isLoggedIn: boolean): Promise<boolean> => {
+    try {
+      await Keychain.setGenericPassword('auth_state', isLoggedIn.toString(), {
+        service: `${KEYCHAIN_SERVICE}_AUTH_STATE`,
+      });
+      return true;
+    } catch (error) {
+      console.error('Error setting auth state:', error);
+      return false;
+    }
+  },
+
   saveCredentialsWithBiometrics: async (
     username: string,
     password: string,
@@ -262,6 +293,10 @@ export const keychainService = {
     promptMessage?: string,
   ): Promise<Credentials | null> => {
     try {
+      console.log(
+        'getCredentialsWithBiometrics called, service:',
+        service || `${KEYCHAIN_SERVICE}_BIOMETRIC`,
+      );
       const credentials = await Keychain.getGenericPassword({
         service: service || `${KEYCHAIN_SERVICE}_BIOMETRIC`,
         authenticationPrompt: {
@@ -272,12 +307,19 @@ export const keychainService = {
         },
       });
 
-      if (credentials) {
+      console.log(
+        'Keychain response:',
+        credentials ? 'Credentials found' : 'No credentials',
+      );
+
+      if (credentials && credentials.username && credentials.password) {
+        console.log('Returning credentials for user:', credentials.username);
         return {
           username: credentials.username,
           password: credentials.password,
         };
       }
+      console.log('No valid credentials found');
       return null;
     } catch (error) {
       console.error('Error retrieving credentials with biometrics:', error);
