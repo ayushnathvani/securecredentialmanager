@@ -41,50 +41,53 @@ const SecureLoginScreen = () => {
 
   const [hasBiometricCredentials, setHasBiometricCredentials] = useState(false);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      reloadCredentials();
-      checkBiometricCredentials();
-    }, [reloadCredentials]),
-  );
-
   const checkBiometricCredentials = async () => {
     try {
-      // Check if we have biometric-protected credentials stored
-      const biometricCreds = await keychainService.hasBiometricCredentials();
-      setHasBiometricCredentials(biometricCreds);
+      const biometricEnabled = await keychainService.isBiometricEnabled();
+      console.log('Biometric enabled check:', biometricEnabled);
+      setHasBiometricCredentials(
+        biometricEnabled && biometricSupport.available,
+      );
     } catch (err) {
       console.error('Error checking biometric credentials:', err);
       setHasBiometricCredentials(false);
     }
   };
 
+  useFocusEffect(
+    React.useCallback(() => {
+      reloadCredentials();
+      checkBiometricCredentials();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [reloadCredentials]),
+  );
+
   const handleBiometricLogin = async () => {
     try {
       console.log('Starting biometric login...');
+
+      // Try to get credentials with biometric authentication
       const credentials = await getCredentialsWithBiometrics(
         `Authenticate to login with ${getBiometricTypeName()}`,
       );
 
       console.log(
-        'Biometric credentials result:',
+        'Biometric auth completed, credentials:',
         credentials ? 'Found' : 'Not found',
       );
 
-      if (credentials && credentials.username && credentials.password) {
-        // Set auth state and navigate to Home directly
-        console.log('Setting auth state and navigating to Home...');
+      // If biometric authentication succeeded (even if no credentials stored)
+      // we navigate to Home. The biometric prompt was shown and user authenticated.
+      if (credentials) {
+        // Credentials found - set auth state and go to Home
+        console.log('Credentials found, navigating to Home...');
         await keychainService.setAuthState(true);
-
-        // Use setTimeout to ensure state is set before navigation
-        setTimeout(() => {
-          navigation.replace('Home');
-        }, 100);
+        navigation.replace('Home');
       } else {
-        // Credentials not found but biometric was successful
+        // Biometric was cancelled or failed
         Alert.alert(
-          'No Saved Credentials',
-          'Please login with your username and password first.',
+          'Authentication Failed',
+          'Please try again or use your credentials to login.',
         );
       }
     } catch (err) {
@@ -98,17 +101,11 @@ const SecureLoginScreen = () => {
 
   const proceedAfterLogin = async () => {
     try {
-      // Check if MPIN exists
-      const hasMPIN = await keychainService.getMPIN();
-
-      if (hasMPIN) {
-        navigation.replace('VerifyMPIN');
-      } else {
-        navigation.replace('SetMPIN');
-      }
+      // MPIN flow temporarily disabled - go straight to Home after login
+      navigation.replace('Home');
     } catch (err) {
       console.error('Error checking MPIN:', err);
-      navigation.replace('SetMPIN');
+      navigation.replace('Home');
     }
   };
 
@@ -242,6 +239,8 @@ const SecureLoginScreen = () => {
                             password,
                           );
                           if (saved) {
+                            // Also set the biometric flag so Quick Login shows next time
+                            await keychainService.setBiometricEnabled();
                             setHasBiometricCredentials(true);
                           }
                           await proceedAfterLogin();

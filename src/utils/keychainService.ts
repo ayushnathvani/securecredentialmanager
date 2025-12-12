@@ -249,14 +249,39 @@ export const keychainService = {
     }
   },
 
+  setBiometricEnabled: async (): Promise<boolean> => {
+    try {
+      await Keychain.setGenericPassword('biometric_enabled', 'true', {
+        service: `${KEYCHAIN_SERVICE}_BIOMETRIC_FLAG`,
+      });
+      console.log('Biometric flag set');
+      return true;
+    } catch (error) {
+      console.error('Error setting biometric flag:', error);
+      return false;
+    }
+  },
+
+  isBiometricEnabled: async (): Promise<boolean> => {
+    try {
+      const result = await Keychain.getGenericPassword({
+        service: `${KEYCHAIN_SERVICE}_BIOMETRIC_FLAG`,
+      });
+      const isEnabled = result !== false && result !== null;
+      console.log('isBiometricEnabled:', isEnabled);
+      return isEnabled;
+    } catch (error) {
+      console.log('Biometric not enabled:', error);
+      return false;
+    }
+  },
+
   saveCredentialsWithBiometrics: async (
     username: string,
     password: string,
     service?: string,
   ): Promise<boolean> => {
     try {
-      // Use RSA storage with biometric access control for Android
-      // This will trigger biometric prompt when retrieving
       await Keychain.setGenericPassword(username, password, {
         service: service || `${KEYCHAIN_SERVICE}_BIOMETRIC`,
         accessible: Keychain.ACCESSIBLE.WHEN_PASSCODE_SET_THIS_DEVICE_ONLY,

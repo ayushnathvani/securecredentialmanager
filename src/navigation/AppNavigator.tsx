@@ -37,17 +37,8 @@ const AppNavigator = () => {
       const isLoggedIn = await keychainService.getAuthState();
 
       if (isLoggedIn) {
-        // Check if MPIN exists
-        const hasMPIN = await keychainService.getMPIN();
-
-        if (hasMPIN) {
-          console.log('MPIN exists, showing VerifyMPIN screen');
-          setInitialRoute('VerifyMPIN');
-        } else {
-          // No MPIN, but logged in - this shouldn't happen normally
-          // but handle gracefully by showing home
-          setInitialRoute('Home');
-        }
+        // MPIN flow temporarily disabled - navigate directly to Home when logged in
+        setInitialRoute('Home');
       } else {
         // Not logged in, show login screen
         setInitialRoute('SecureLogin');

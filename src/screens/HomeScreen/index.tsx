@@ -74,57 +74,19 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
     ]);
   };
 
+  // --- Simplified UI: centered title, username, logout button ---
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.header}>
-        <Text style={styles.headerEmoji}>👋</Text>
-        <Text style={styles.title}>Welcome Back!</Text>
-        {username ? <Text style={styles.subtitle}>@{username}</Text> : null}
-      </View>
-
-      <Card style={styles.welcomeCard}>
-        <Text style={styles.welcomeTitle}> You're Logged In</Text>
-        <Text style={styles.welcomeText}>
-          Your credentials are securely stored in the device keychain using
-          hardware-level encryption.
-        </Text>
-      </Card>
-
-      <Card style={styles.infoCard}>
-        <Text style={styles.infoTitle}>🔐 Security Features</Text>
-        <Text style={styles.infoText}>
-          ✓ Encrypted credential storage{'\n'}✓ Auto-fill on next login{'\n'}✓
-          Secure token management{'\n'}✓ Hardware-backed security{'\n'}✓
-          Biometric authentication
-        </Text>
-      </Card>
-
-      <Card style={styles.actionCard}>
-        <Text style={styles.actionTitle}>Try Biometric Authentication</Text>
-        <Text style={styles.infoText}>
-          Experience secure data storage with Face ID, Touch ID, or Fingerprint
-          protection
-        </Text>
-        <Button
-          title="Open Biometric Demo"
-          onPress={() => navigation.navigate('BiometricAuth')}
-          variant="secondary"
-          fullWidth
-          style={styles.biometricButton}
-        />
-      </Card>
-
-      <Card style={styles.actionCard}>
-        <Text style={styles.actionTitle}>Account Actions</Text>
-        <Button
-          title="Logout"
-          onPress={handleLogout}
-          loading={loading}
-          fullWidth
-          style={styles.logoutButton}
-        />
-      </Card>
-    </ScrollView>
+    <View style={styles.container}>
+      <Text style={styles.title}>Welcome Back!</Text>
+      {username ? <Text style={styles.subtitle}>@{username}</Text> : null}
+      <Button
+        title="Logout"
+        onPress={handleLogout}
+        loading={loading}
+        fullWidth={false}
+        style={styles.logoutButton}
+      />
+    </View>
   );
 };
 

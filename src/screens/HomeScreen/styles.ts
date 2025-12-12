@@ -5,6 +5,9 @@ export const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.lg,
   },
   content: {
     padding: spacing.lg,
@@ -23,13 +26,14 @@ export const styles = StyleSheet.create({
     fontSize: fontSize.xxxl,
     fontWeight: 'bold',
     color: colors.text,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.sm,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: fontSize.base,
     color: colors.textSecondary,
     textAlign: 'center',
+    marginBottom: spacing.lg,
   },
   welcomeCard: {
     backgroundColor: colors.primary + '10',
@@ -76,7 +80,8 @@ export const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   logoutButton: {
-    marginTop: spacing.sm,
+    marginTop: spacing.md,
+    width: '60%',
   },
   biometricButton: {
     marginTop: spacing.md,
