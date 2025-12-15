@@ -498,10 +498,11 @@ export const keychainService = {
 
   getSensitiveData: async (
     key: string,
+    useBiometrics: boolean = false,
     promptMessage?: string,
   ): Promise<string | null> => {
     try {
-      const serviceKey = promptMessage
+      const serviceKey = useBiometrics
         ? `${KEYCHAIN_SERVICE}_${key.toUpperCase()}_BIO`
         : `${KEYCHAIN_SERVICE}_${key.toUpperCase()}`;
 
@@ -509,9 +510,9 @@ export const keychainService = {
         service: serviceKey,
       };
 
-      if (promptMessage) {
+      if (useBiometrics) {
         options.authenticationPrompt = {
-          title: promptMessage,
+          title: promptMessage || 'Authenticate to access secure data',
           subtitle: 'Use biometrics to unlock',
           description: 'Place your finger on the sensor',
           cancel: 'Cancel',
@@ -530,10 +531,17 @@ export const keychainService = {
     }
   },
 
-  deleteSensitiveData: async (key: string): Promise<boolean> => {
+  deleteSensitiveData: async (
+    key: string,
+    useBiometrics: boolean = false,
+  ): Promise<boolean> => {
     try {
+      const serviceKey = useBiometrics
+        ? `${KEYCHAIN_SERVICE}_${key.toUpperCase()}_BIO`
+        : `${KEYCHAIN_SERVICE}_${key.toUpperCase()}`;
+
       await Keychain.resetGenericPassword({
-        service: `${KEYCHAIN_SERVICE}_${key.toUpperCase()}`,
+        service: serviceKey,
       });
       return true;
     } catch (error) {

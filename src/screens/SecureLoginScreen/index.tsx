@@ -76,8 +76,7 @@ const SecureLoginScreen = () => {
         credentials ? 'Found' : 'Not found',
       );
 
-      // If biometric authentication succeeded (even if no credentials stored)
-      // we navigate to Home. The biometric prompt was shown and user authenticated.
+    
       if (credentials) {
         // Credentials found - set auth state and go to Home
         console.log('Credentials found, navigating to Home...');
@@ -112,7 +111,7 @@ const SecureLoginScreen = () => {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.emoji}>🔐</Text>
+        <Text style={styles.emoji}></Text>
         <Text style={styles.title}>Secure Login</Text>
         <Text style={styles.subtitle}>Token Storage Demo</Text>
       </View>
@@ -163,7 +162,7 @@ const SecureLoginScreen = () => {
             onPress={useSavedCredentials}
           >
             <View style={styles.suggestionContent}>
-              <Text style={styles.suggestionIcon}>💾</Text>
+              <Text style={styles.suggestionIcon}></Text>
               <View style={styles.suggestionTextContainer}>
                 <Text style={styles.suggestionTitle}>
                   Use saved credentials
@@ -183,7 +182,7 @@ const SecureLoginScreen = () => {
           onChangeText={setUsername}
           placeholder="Enter any username"
           keyboardType="email-address"
-          leftIcon={<Text style={styles.icon}>👤</Text>}
+          leftIcon={<Text style={styles.icon}></Text>}
         />
 
         <TextInput
@@ -192,7 +191,7 @@ const SecureLoginScreen = () => {
           onChangeText={setPassword}
           placeholder="Enter any password"
           secureTextEntry
-          leftIcon={<Text style={styles.icon}>🔑</Text>}
+          leftIcon={<Text style={styles.icon}></Text>}
         />
 
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
@@ -210,13 +209,10 @@ const SecureLoginScreen = () => {
           title={loading ? 'Logging in...' : 'Login Securely'}
           onPress={async () => {
             const loginSuccess = await handleLogin();
-            // Navigate to MPIN setup or verify after successful login
             if (loginSuccess) {
-              // Check if biometrics is available and this is a new user
               const isNewUser = !savedCredentials;
 
               if (isNewUser && biometricSupport.available) {
-                // Prompt user to save credentials with biometric protection
                 Alert.alert(
                   'Enable Biometric Login?',
                   `Would you like to enable ${getBiometricTypeName()} login for faster access next time? Your credentials will be encrypted and protected with ${getBiometricTypeName()}.`,
@@ -225,7 +221,6 @@ const SecureLoginScreen = () => {
                       text: 'Not Now',
                       style: 'cancel',
                       onPress: async () => {
-                        // Continue without biometric protection
                         await proceedAfterLogin();
                       },
                     },
@@ -233,13 +228,11 @@ const SecureLoginScreen = () => {
                       text: 'Enable',
                       onPress: async () => {
                         try {
-                          // Save credentials with biometric protection
                           const saved = await saveCredentialsWithBiometrics(
                             username,
                             password,
                           );
                           if (saved) {
-                            // Also set the biometric flag so Quick Login shows next time
                             await keychainService.setBiometricEnabled();
                             setHasBiometricCredentials(true);
                           }
@@ -256,7 +249,6 @@ const SecureLoginScreen = () => {
                   ],
                 );
               } else if (isNewUser) {
-                // No biometrics available, prompt regular save
                 Alert.alert(
                   'Save Login Credentials?',
                   "Would you like to securely save your login credentials for faster access next time? Your credentials will be encrypted and stored in your device's secure keychain.",
@@ -286,7 +278,6 @@ const SecureLoginScreen = () => {
                   ],
                 );
               } else {
-                // Returning user with saved credentials
                 await proceedAfterLogin();
               }
             }
