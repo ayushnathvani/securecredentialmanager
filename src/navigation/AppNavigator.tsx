@@ -7,6 +7,7 @@ import {
   SetMPINScreen,
   VerifyMPINScreen,
   BiometricAuthScreen,
+  UserInfoDetails,
 } from '../screens';
 import { colors } from '../utils';
 import { keychainService } from '../utils/keychainService';
@@ -17,6 +18,7 @@ export type RootStackParamList = {
   SetMPIN: undefined;
   VerifyMPIN: undefined;
   BiometricAuth: undefined;
+  UserInfoDetails: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -109,6 +111,13 @@ const AppNavigator = () => {
           component={BiometricAuthScreen}
           options={{
             title: 'Biometric Authentication',
+          }}
+        />
+        <Stack.Screen
+          name="UserInfoDetails"
+          component={UserInfoDetails}
+          options={{
+            title: 'User Info / Credentials',
           }}
         />
       </Stack.Navigator>

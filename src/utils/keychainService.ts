@@ -549,4 +549,56 @@ export const keychainService = {
       return false;
     }
   },
+
+  // Internet credentials helpers (useful when a server/host is provided)
+  saveInternetCredentials: async (
+    server: string | undefined,
+    username: string,
+    password: string,
+  ): Promise<boolean> => {
+    try {
+      const svc = server || `${KEYCHAIN_SERVICE}_INTERNET`;
+      // react-native-keychain exposes setInternetCredentials
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      await Keychain.setInternetCredentials(svc, username, password);
+      return true;
+    } catch (error) {
+      console.error('Error saving internet credentials:', error);
+      return false;
+    }
+  },
+
+  getInternetCredentials: async (
+    server: string | undefined,
+  ): Promise<Credentials | null> => {
+    try {
+      const svc = server || `${KEYCHAIN_SERVICE}_INTERNET`;
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const creds = await Keychain.getInternetCredentials(svc);
+      if (creds && creds.username && creds.password) {
+        return { username: creds.username, password: creds.password };
+      }
+      return null;
+    } catch (error) {
+      console.error('Error retrieving internet credentials:', error);
+      return null;
+    }
+  },
+
+  deleteInternetCredentials: async (
+    server: string | undefined,
+  ): Promise<boolean> => {
+    try {
+      const svc = server || `${KEYCHAIN_SERVICE}_INTERNET`;
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      await Keychain.resetInternetCredentials(svc);
+      return true;
+    } catch (error) {
+      console.error('Error deleting internet credentials:', error);
+      return false;
+    }
+  },
 };

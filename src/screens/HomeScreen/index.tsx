@@ -11,6 +11,7 @@ type RootStackParamList = {
   Home: undefined;
   SecureLogin: undefined;
   BiometricAuth: undefined;
+  UserInfoDetails: undefined;
 };
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
@@ -425,6 +426,13 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         fullWidth={false}
         style={styles.logoutButton}
       />
+
+      {/* <Button
+        title="Manage Credentials"
+        onPress={() => navigation.navigate('UserInfoDetails')}
+        fullWidth={false}
+        style={styles.biometricButton}
+      /> */}
     </ScrollView>
   );
 };

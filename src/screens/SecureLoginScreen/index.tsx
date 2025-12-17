@@ -129,7 +129,7 @@ const SecureLoginScreen = () => {
             onPress={handleBiometricLogin}
             disabled={biometricLoading}
           >
-            <Text style={styles.biometricIcon}>{getBiometricIcon()}</Text>
+            {/* <Text style={styles.biometricIcon}>{getBiometricIcon()}</Text> */}
             <View style={styles.biometricTextContainer}>
               <Text style={styles.biometricTitle}>
                 {biometricLoading
