@@ -12,6 +12,7 @@ type RootStackParamList = {
   SecureLogin: undefined;
   BiometricAuth: undefined;
   UserInfoDetails: undefined;
+  ImageLoader: undefined;
 };
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
@@ -269,6 +270,11 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
       <View style={styles.header}>
         <Text style={styles.title}>Welcome Back!</Text>
         {username ? <Text style={styles.subtitle}>@{username}</Text> : null}
+        <Button
+          title="Open Image Loader"
+          onPress={() => navigation.navigate('ImageLoader' as any)}
+          style={{ marginTop: 8 }}
+        />
       </View>
 
       {/* Saved Payment Details Display */}
@@ -427,12 +433,12 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         style={styles.logoutButton}
       />
 
-      {/* <Button
+      <Button
         title="Manage Credentials"
         onPress={() => navigation.navigate('UserInfoDetails')}
         fullWidth={false}
         style={styles.biometricButton}
-      /> */}
+      />
     </ScrollView>
   );
 };

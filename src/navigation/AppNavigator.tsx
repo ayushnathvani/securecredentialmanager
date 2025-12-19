@@ -19,6 +19,7 @@ export type RootStackParamList = {
   VerifyMPIN: undefined;
   BiometricAuth: undefined;
   UserInfoDetails: undefined;
+  ImageLoader: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -118,6 +119,14 @@ const AppNavigator = () => {
           component={UserInfoDetails}
           options={{
             title: 'User Info / Credentials',
+          }}
+        />
+        <Stack.Screen
+          name="ImageLoader"
+          // lazy-load component import to avoid import ordering issues
+          component={require('../screens/ImageLoaderScreen').default}
+          options={{
+            title: 'Image Loader',
           }}
         />
       </Stack.Navigator>

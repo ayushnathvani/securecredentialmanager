@@ -297,19 +297,19 @@ export const keychainService = {
         error.message,
       );
       // Fallback to AES storage
-      try {
-        await Keychain.setGenericPassword(username, password, {
-          service: service || `${KEYCHAIN_SERVICE}_BIOMETRIC`,
-          accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
-          securityLevel: Keychain.SECURITY_LEVEL.SECURE_SOFTWARE,
-          storage: Keychain.STORAGE_TYPE.AES,
-        });
-        console.log('Credentials saved with AES encryption (fallback)');
-        return true;
-      } catch (fallbackError) {
-        console.error('Error saving credentials:', fallbackError);
-        return false;
-      }
+      // try {
+      //   await Keychain.setGenericPassword(username, password, {
+      //     service: service || `${KEYCHAIN_SERVICE}_BIOMETRIC`,
+      //     accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+      //     securityLevel: Keychain.SECURITY_LEVEL.SECURE_SOFTWARE,
+      //     storage: Keychain.STORAGE_TYPE.AES,
+      //   });
+      //   console.log('Credentials saved with AES encryption (fallback)');
+      //   return true;
+      // } catch (fallbackError) {
+      //   console.error('Error saving credentials:', fallbackError);
+      //   return false;
+      // }
     }
   },
 
