@@ -457,7 +457,7 @@ export const keychainService = {
     useBiometrics: boolean = true,
   ): Promise<boolean> => {
     try {
-      const serviceKey = `${KEYCHAIN_SERVICE}_${key.toUpperCase()}_BIO`;
+      const serviceKey = `${KEYCHAIN_SERVICE}}_BIO`;
 
       if (useBiometrics) {
         // Try RSA with biometric first
@@ -502,9 +502,7 @@ export const keychainService = {
     promptMessage?: string,
   ): Promise<string | null> => {
     try {
-      const serviceKey = useBiometrics
-        ? `${KEYCHAIN_SERVICE}_${key.toUpperCase()}_BIO`
-        : `${KEYCHAIN_SERVICE}_${key.toUpperCase()}`;
+      const serviceKey = `${KEYCHAIN_SERVICE}}_BIO`;
 
       const options: Keychain.Options = {
         service: serviceKey,
@@ -536,10 +534,7 @@ export const keychainService = {
     useBiometrics: boolean = false,
   ): Promise<boolean> => {
     try {
-      const serviceKey = useBiometrics
-        ? `${KEYCHAIN_SERVICE}_${key.toUpperCase()}_BIO`
-        : `${KEYCHAIN_SERVICE}_${key.toUpperCase()}`;
-
+      const serviceKey = `${KEYCHAIN_SERVICE}}_BIO`;
       await Keychain.resetGenericPassword({
         service: serviceKey,
       });
@@ -556,11 +551,10 @@ export const keychainService = {
     username: string,
     password: string,
   ): Promise<boolean> => {
+
+    
     try {
-      const svc = server || `${KEYCHAIN_SERVICE}_INTERNET`;
-      // react-native-keychain exposes setInternetCredentials
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
+      const svc = 'server' ;
       await Keychain.setInternetCredentials(svc, username, password);
       return true;
     } catch (error) {
@@ -573,9 +567,8 @@ export const keychainService = {
     server: string | undefined,
   ): Promise<Credentials | null> => {
     try {
-      const svc = server || `${KEYCHAIN_SERVICE}_INTERNET`;
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
+      const svc = 'server';
+
       const creds = await Keychain.getInternetCredentials(svc);
       if (creds && creds.username && creds.password) {
         return { username: creds.username, password: creds.password };
@@ -591,14 +584,95 @@ export const keychainService = {
     server: string | undefined,
   ): Promise<boolean> => {
     try {
-      const svc = server || `${KEYCHAIN_SERVICE}_INTERNET`;
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
+      const svc = 'server';
+
       await Keychain.resetInternetCredentials(svc);
       return true;
     } catch (error) {
       console.error('Error deleting internet credentials:', error);
       return false;
+    }
+  },
+
+  // Get all internet credentials from different services
+  getAllInternetCredentials: async (): Promise<
+    Array<{
+      id: string;
+      username: string;
+      password: string;
+      service: string;
+      lastUsed?: string;
+    }>
+  > => {
+    try {
+      const credentialsList: Array<{
+        id: string;
+        username: string;
+        password: string;
+        service: string;
+        lastUsed?: string;
+      }> = [];
+
+      // Get default service credentials
+      const defaultCreds = await keychainService.getInternetCredentials(
+        undefined,
+      );
+      if (defaultCreds) {
+        credentialsList.push({
+          id: `${KEYCHAIN_SERVICE}_INTERNET`,
+          username: defaultCreds.username,
+          password: defaultCreds.password,
+          service: 'Default',
+          lastUsed: new Date().toISOString(),
+        });
+      }
+
+      // Get generic password credentials (fallback for existing users)
+      const genericCreds = await keychainService.getCredentials();
+      if (genericCreds) {
+        credentialsList.push({
+          id: KEYCHAIN_SERVICE,
+          username: genericCreds.username,
+          password: genericCreds.password,
+          service: 'App Login',
+          lastUsed: new Date().toISOString(),
+        });
+      }
+
+      // In a real app, you might iterate through known services
+      // For now, we'll check a few common services
+      const commonServices = [
+        'gmail.com',
+        'outlook.com',
+        'facebook.com',
+        'twitter.com',
+        'linkedin.com',
+      ];
+
+      for (const service of commonServices) {
+        try {
+          const serviceCreds = await keychainService.getInternetCredentials(
+            service,
+          );
+          if (serviceCreds) {
+            credentialsList.push({
+              id: service,
+              username: serviceCreds.username,
+              password: serviceCreds.password,
+              service: service,
+              lastUsed: new Date().toISOString(),
+            });
+          }
+        } catch (serviceError) {
+          // Skip services that don't have credentials
+          continue;
+        }
+      }
+
+      return credentialsList;
+    } catch (error) {
+      console.error('Error getting all internet credentials:', error);
+      return [];
     }
   },
 };
